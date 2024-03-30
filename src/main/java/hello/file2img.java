@@ -24,6 +24,12 @@ import java.net.URL;
 import com.xuggle.mediatool.IMediaWriter;
 import com.xuggle.mediatool.ToolFactory;
 import com.xuggle.xuggler.ICodec;
+import com.xuggle.mediatool.IMediaReader;
+//get congtaner format
+import com.xuggle.xuggler.IContainer;
+// get read buffer image
+import com.xuggle.xuggler.IPacket;
+
 
 
 
@@ -46,7 +52,7 @@ public class file2img {
             //function to convert the generated video into a list of images 
             // to be done 
             //convert the images to a back into the original file 
-            videoToFile("Videos/output.mp4");;
+            videoToText("Videos/output.mp4");;
             // framesToBinary(frames, 1280, 720, 4);
             System.out.println("Images converted to file");
         }
@@ -307,41 +313,41 @@ public class file2img {
         return image;
     }
 
-    public static void videoToFile(String videoFilePath) {
+    public static void videoToText(String videoFilePath) {
         try {
             // Get the video file
             File videoFile = new File(videoFilePath);
-
+            System.out.println("Video file: " + videoFile.getName());
+    
             // Create a list to store the frames
             List<BufferedImage> frames = new ArrayList<>();
-
+    
             // Open the video file
-            ImageInputStream videoStream = ImageIO.createImageInputStream(videoFile);
-            ImageReader reader = ImageIO.getImageReadersByFormatName("mp4").next();
-            reader.setInput(videoStream);
-
+            IMediaReader reader = ToolFactory.makeReader(videoFilePath);
+            reader.setBufferedImageTypeToGenerate(BufferedImage.TYPE_3BYTE_BGR);
+    
             // Read all frames from the video
-            for (int frameIndex = 0; ; frameIndex++) {
-                BufferedImage frame = reader.read(frameIndex);
-                if (frame == null) {
-                    break;
-                }
+            ICodec codec = reader.getContainerFormat().getVideo().getCodecId();
+            int framesRead = 0;
+            BufferedImage frame;
+            while ((frame = reader.readBufferedImage()) != null) {
                 frames.add(frame);
+                framesRead++;
             }
-
-            // Close the video stream
-            reader.dispose();
-            videoStream.close();
-
+    
+            reader.close();
+    
+            System.out.println("Frames read: " + framesRead);
+    
             // Call the framesToBinary function with the extracted frames
             framesToBinary(frames, 1280, 720, 4);
-
-
+    
+            // Read the generated text from the output file
+            String text = new String(Files.readAllBytes(Paths.get("output.txt")));
+            System.out.println("Original text from video: " + text);
+    
         } catch (IOException e) {
             e.printStackTrace();
         }
-        
-    }
-
-
+    } 
 }
