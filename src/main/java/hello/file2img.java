@@ -37,7 +37,7 @@ public class file2img {
     public static void converter() {
         System.out.println("Conversion process initiating...");
         Scanner scanner = new Scanner(System.in);
-        System.out.println("convert file to video press 1 and Enter\nconvert video to file press 2 and Enter\nDownload video from youtube press 3 and Enter");
+        System.out.println("convert file to video press 1 and Enter\nconvert video to file press 2 and Enter\nr");
         String input_Data = scanner.nextLine();
         scanner.close();
         if(input_Data.equals("1")){
@@ -79,7 +79,8 @@ public class file2img {
 
         // Read the contents of the file and convert it to binary
         File inputFile = new File(dir, fileName);
-        byte[] buffer = new byte[1024];
+        byte[] buffer = new byte[1024]; // Buffer of 1KB to read the file , can be increased if needed
+        
         StringBuilder binaryString = new StringBuilder();
         try (FileInputStream fis = new FileInputStream(inputFile)) {
             int bytesRead;
