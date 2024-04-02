@@ -52,7 +52,7 @@ public class file2img {
             //function to convert the generated video into a list of images 
             // to be done 
             //convert the images to a back into the original file 
-            videoToText("Videos/output.mp4");;
+            //videoToText("Videos/output.mp4");;
             // framesToBinary(frames, 1280, 720, 4);
             System.out.println("Images converted to file");
         }
@@ -313,41 +313,41 @@ public class file2img {
         return image;
     }
 
-    public static void videoToText(String videoFilePath) {
-        try {
-            // Get the video file
-            File videoFile = new File(videoFilePath);
-            System.out.println("Video file: " + videoFile.getName());
+    // public static void videoToText(String videoFilePath) {
+    //     try {
+    //         // Get the video file
+    //         File videoFile = new File(videoFilePath);
+    //         System.out.println("Video file: " + videoFile.getName());
     
-            // Create a list to store the frames
-            List<BufferedImage> frames = new ArrayList<>();
+    //         // Create a list to store the frames
+    //         List<BufferedImage> frames = new ArrayList<>();
     
-            // Open the video file
-            IMediaReader reader = ToolFactory.makeReader(videoFilePath);
-            reader.setBufferedImageTypeToGenerate(BufferedImage.TYPE_3BYTE_BGR);
+    //         // Open the video file
+    //         IMediaReader reader = ToolFactory.makeReader(videoFilePath);
+    //         reader.setBufferedImageTypeToGenerate(BufferedImage.TYPE_3BYTE_BGR);
     
-            // Read all frames from the video
-            ICodec codec = reader.getContainerFormat().getVideo().getCodecId();
-            int framesRead = 0;
-            BufferedImage frame;
-            while ((frame = reader.readBufferedImage()) != null) {
-                frames.add(frame);
-                framesRead++;
-            }
+    //         // Read all frames from the video
+    //         ICodec codec = reader.getContainerFormat().getVideo().getCodecId();
+    //         int framesRead = 0;
+    //         BufferedImage frame;
+    //         while ((frame = reader.readBufferedImage()) != null) {
+    //             frames.add(frame);
+    //             framesRead++;
+    //         }
     
-            reader.close();
+    //         reader.close();
     
-            System.out.println("Frames read: " + framesRead);
+    //         System.out.println("Frames read: " + framesRead);
     
-            // Call the framesToBinary function with the extracted frames
-            framesToBinary(frames, 1280, 720, 4);
+    //         // Call the framesToBinary function with the extracted frames
+    //         framesToBinary(frames, 1280, 720, 4);
     
-            // Read the generated text from the output file
-            String text = new String(Files.readAllBytes(Paths.get("output.txt")));
-            System.out.println("Original text from video: " + text);
+    //         // Read the generated text from the output file
+    //         String text = new String(Files.readAllBytes(Paths.get("output.txt")));
+    //         System.out.println("Original text from video: " + text);
     
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    } 
+    //     } catch (IOException e) {
+    //         e.printStackTrace();
+    //     }
+    // } 
 }
