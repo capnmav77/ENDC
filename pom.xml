@@ -53,6 +53,13 @@
             <artifactId>logback-classic</artifactId>
             <version>1.2.7</version> <!-- Use the latest version available -->
         </dependency>
+
+		<dependency>
+			<groupId>org.bytedeco</groupId>
+			<artifactId>javacv-platform</artifactId>
+			<version>1.5.5</version> <!-- or the latest version -->
+		</dependency>
+
         
         
 	</dependencies>

@@ -30,6 +30,9 @@ import com.xuggle.xuggler.IContainer;
 // get read buffer image
 import com.xuggle.xuggler.IPacket;
 
+import org.bytedeco.opencv.opencv_core.IplImage;
+import org.bytedeco.opencv.opencv_core.Mat;
+import org.bytedeco.opencv.opencv_videoio.VideoCapture;
 
 
 
@@ -52,9 +55,20 @@ public class file2img {
             //function to convert the generated video into a list of images 
             // to be done 
             //convert the images to a back into the original file 
-            //videoToText("Videos/output.mp4");;
-            // framesToBinary(frames, 1280, 720, 4);
-            System.out.println("Images converted to file");
+            String videoPath = "output.mp4";
+            //check if the video file exists
+            File file = new File(videoPath);
+            if (!file.exists()) {
+                System.out.println("Error: Video file not found.");
+                return;
+            }
+            List<BufferedImage> frames = vidToFrames(videoPath);
+            if(frames.size() == 0){
+                System.out.println("Error: No frames found in the video.");
+                return;
+            }
+            framesToBinary(frames, 1280, 720, 4);
+            System.out.println("Video converted to File!");
         }
         else{
             System.out.println("input WIP");
@@ -314,41 +328,48 @@ public class file2img {
         return image;
     }
 
-    // public static void videoToText(String videoFilePath) {
-    //     try {
-    //         // Get the video file
-    //         File videoFile = new File(videoFilePath);
-    //         System.out.println("Video file: " + videoFile.getName());
-    
-    //         // Create a list to store the frames
-    //         List<BufferedImage> frames = new ArrayList<>();
-    
-    //         // Open the video file
-    //         IMediaReader reader = ToolFactory.makeReader(videoFilePath);
-    //         reader.setBufferedImageTypeToGenerate(BufferedImage.TYPE_3BYTE_BGR);
-    
-    //         // Read all frames from the video
-    //         ICodec codec = reader.getContainerFormat().getVideo().getCodecId();
-    //         int framesRead = 0;
-    //         BufferedImage frame;
-    //         while ((frame = reader.readBufferedImage()) != null) {
-    //             frames.add(frame);
-    //             framesRead++;
-    //         }
-    
-    //         reader.close();
-    
-    //         System.out.println("Frames read: " + framesRead);
-    
-    //         // Call the framesToBinary function with the extracted frames
-    //         framesToBinary(frames, 1280, 720, 4);
-    
-    //         // Read the generated text from the output file
-    //         String text = new String(Files.readAllBytes(Paths.get("output.txt")));
-    //         System.out.println("Original text from video: " + text);
-    
-    //     } catch (IOException e) {
-    //         e.printStackTrace();
-    //     }
-    // } 
+    public static List<BufferedImage> vidToFrames(String videoPath) {
+        // Create a list to store the frames
+        List<BufferedImage> frames = new ArrayList<>();
+
+        // Create a video capture object
+        VideoCapture capture = new VideoCapture(videoPath);
+
+
+        // Check if the video capture object is opened successfully
+        if (!capture.isOpened()) {
+            System.out.println("Error: Unable to open video file.");
+            return frames;
+        }
+
+        // Read the video frame by frame
+        Mat frame = new Mat();
+        while (capture.read(frame)) {
+            // Convert frame to BufferedImage
+            BufferedImage image = matToBufferedImage(frame);
+            frames.add(image);
+        }
+
+        // Release the capture object
+        capture.release();
+
+        return frames;
+    }
+
+    // Helper method to convert Mat to BufferedImage
+    private static BufferedImage matToBufferedImage(Mat mat) {
+        // Convert Mat to byte array
+        int width = mat.cols();
+        int height = mat.rows();
+        int channels = mat.channels();
+        byte[] imageData = new byte[width * height * channels];
+        mat.data().get(imageData);
+
+        // Create BufferedImage
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+        image.getRaster().setDataElements(0, 0, width, height, imageData);
+
+        return image;
+    }    
+
 }
