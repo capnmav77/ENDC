@@ -63,12 +63,8 @@ public class file2img {
 
             //convert the video to frames
             vidToFrames(videoPath);
-            //if(frames.size() == 0){
-            //     System.out.println("Error: No frames found in the video.");
-            //     return;
-            // }
-            //convert the frames to binary
-            //framesToBinary(frames, 1280, 720, 4);
+            List<BufferedImage> frames = Image2Binary("frames");
+            framesToBinary(frames, 1280, 720, 4);
             System.out.println("Video converted to File");
         }
         else{
@@ -110,7 +106,7 @@ public class file2img {
         }
 
         // Add an EOF token to the binary string
-        String eofToken = "123456789012345678901234567890";
+        String eofToken = "123456789012345678901234567890123456789012345678901234567890";
         String eofBinary = new String();
         for (int i = 0; i < eofToken.length(); i++) {
             eofBinary += String.format("%8s", Integer.toBinaryString(eofToken.charAt(i) & 0xFF)).replace(' ', '0');
@@ -205,6 +201,14 @@ public class file2img {
             // Add the frame to the list of frames
             frames.add(img);
         }
+        //finally add a black frame to the end of the video
+        BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                img.setRGB(x, y, 0);
+            }
+        }
+        frames.add(img);
 
         if(genimages == 1){
             StoreImages(frames , "temp0");
@@ -323,6 +327,8 @@ public class file2img {
             if (!frameFolder.exists()) {
                 frameFolder.mkdirs();
             }
+    
+            // Process frames until null is returned
             while ((frame = grabber.grabImage()) != null) {
                 BufferedImage image = converter.convert(frame);
                 if (image != null) {
@@ -334,6 +340,20 @@ public class file2img {
                 }
                 frameCount++;
             }
+            frameCount++;
+    
+            // Process one more frame to ensure the last frame is captured
+            frame = grabber.grabImage();
+            if (frame != null) {
+                BufferedImage image = converter.convert(frame);
+                if (image != null) {
+                    // Save the last frame in its own folder
+                    File outputFile = new File(frameFolder, "frame_" + frameCount + ".png");
+                    ImageIO.write(image, "png", outputFile);
+                } else {
+                    System.out.println("Frame " + frameCount + " is null");
+                }
+            }
     
             // Release the grabber
             grabber.stop();
@@ -341,7 +361,7 @@ public class file2img {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
+    }    
     
 
 
