@@ -48,7 +48,7 @@ public class file2img {
         if(input_Data.equals("1")){
             // Convert the file to frames and save them as images
             String binaryData = fileToBinary();
-            List<BufferedImage> frames = binaryToFrames(binaryData, 1280, 720, 4, 24,0);
+            List<BufferedImage> frames = binaryToFrames(binaryData, 1280, 720, 4, 24,1);
             framesToVideo(frames, "Videos/output.mp4", 1280, 720, 24);
             //framesToBinary(frames, 1280, 720, 4);
             System.out.println("File converted to Video!");
@@ -57,29 +57,17 @@ public class file2img {
             //function to convert the generated video into a list of images 
             // to be done 
             //convert the images to a back into the original file 
-            String videoPath = "Videos/output.mp4";
+            String videoPath = "Videos/X2Download.app-The_Adventures_of_Sherlock_Holmes.mp4";
             //check if the video file exists
             File file = new File(videoPath);
             if (!file.exists()) {
                 System.out.println("Error: Video file not found.");
                 return;
             }
-            List<BufferedImage> frames = vidToFrames(videoPath);
+            List<BufferedImage> frames = vidToFrames(videoPath,1);
             if(frames.size() == 0){
                 System.out.println("Error: No frames found in the video.");
                 return;
-            }
-
-            //write the frames to a directory temp1
-            for (int i = 0; i < frames.size(); i++) {
-                BufferedImage frame = frames.get(i);
-                String filename = "temp1/frame_" + i + ".png";
-                File file1 = new File(filename);
-                try {
-                    ImageIO.write(frame, "png", file1);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
             }
             framesToBinary(frames, 1280, 720, 4);
             System.out.println("Video converted to File!");
@@ -342,7 +330,7 @@ public class file2img {
         return image;
     }
 
-    public static List<BufferedImage> vidToFrames(String videoPath) {
+    public static List<BufferedImage> vidToFrames(String videoPath,int genimages) {
         List<BufferedImage> frames = new ArrayList<>();
     
         try {
@@ -366,7 +354,26 @@ public class file2img {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    
+
+        if(genimages == 1){
+            // Create a directory to store the frames
+            File directory = new File("temp0");
+            if (!directory.exists()) {
+                directory.mkdir();
+            }
+
+            // Save the frames as images in the temp directory
+            for (int i = 0; i < frames.size(); i++) {
+                BufferedImage frame = frames.get(i);
+                String filename = "frame_" + i + ".png";
+                File file = new File(directory, filename);
+                try {
+                    ImageIO.write(frame, "png", file);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
         return frames;
     }    
 }
