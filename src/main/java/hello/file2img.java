@@ -44,7 +44,8 @@ public class file2img {
         Scanner scanner = new Scanner(System.in);
         System.out.println("convert file to video press 1 and Enter\nconvert video to file press 2 and Enter\nr");
         String input_Data = scanner.nextLine();
-        scanner.close();
+
+        
         if(input_Data.equals("1")){
             // Convert the file to frames and save them as images
             String binaryData = fileToBinary();
@@ -54,15 +55,14 @@ public class file2img {
             System.out.println("File converted to Video!");
         }
         else if(input_Data.equals("2")){
-            //function to convert the generated video into a list of images 
-            // to be done 
-            //convert the images to a back into the original file 
-            String videoPath = "Videos/X2Download.app-The_Adventures_of_Sherlock_Holmes.mp4";
+            System.out.println("Enter the path of the video file: ");
+            String videoPath = scanner.nextLine();
             //check if the video file exists
             File file = new File(videoPath);
-            if (!file.exists()) {
+            while (!file.exists()) {
                 System.out.println("Error: Video file not found.");
-                return;
+                videoPath = scanner.nextLine();
+                file = new File(videoPath);
             }
             List<BufferedImage> frames = vidToFrames(videoPath,1);
             if(frames.size() == 0){
