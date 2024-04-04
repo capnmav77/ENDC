@@ -30,6 +30,8 @@ import com.xuggle.xuggler.IContainer;
 // get read buffer image
 import com.xuggle.xuggler.IPacket;
 
+import org.bytedeco.javacv.FFmpegFrameGrabber;
+import org.bytedeco.javacv.Java2DFrameConverter;
 import org.bytedeco.opencv.opencv_core.IplImage;
 import org.bytedeco.opencv.opencv_core.Mat;
 import org.bytedeco.opencv.opencv_videoio.VideoCapture;
@@ -55,7 +57,7 @@ public class file2img {
             //function to convert the generated video into a list of images 
             // to be done 
             //convert the images to a back into the original file 
-            String videoPath = "output.mp4";
+            String videoPath = "Videos/output.mp4";
             //check if the video file exists
             File file = new File(videoPath);
             if (!file.exists()) {
@@ -66,6 +68,18 @@ public class file2img {
             if(frames.size() == 0){
                 System.out.println("Error: No frames found in the video.");
                 return;
+            }
+
+            //write the frames to a directory temp1
+            for (int i = 0; i < frames.size(); i++) {
+                BufferedImage frame = frames.get(i);
+                String filename = "temp1/frame_" + i + ".png";
+                File file1 = new File(filename);
+                try {
+                    ImageIO.write(frame, "png", file1);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
             framesToBinary(frames, 1280, 720, 4);
             System.out.println("Video converted to File!");
@@ -329,47 +343,30 @@ public class file2img {
     }
 
     public static List<BufferedImage> vidToFrames(String videoPath) {
-        // Create a list to store the frames
         List<BufferedImage> frames = new ArrayList<>();
-
-        // Create a video capture object
-        VideoCapture capture = new VideoCapture(videoPath);
-
-
-        // Check if the video capture object is opened successfully
-        if (!capture.isOpened()) {
-            System.out.println("Error: Unable to open video file.");
-            return frames;
+    
+        try {
+            // Create a frame grabber
+            FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(videoPath);
+            grabber.start();
+    
+            // Convert each frame to BufferedImage
+            Java2DFrameConverter converter = new Java2DFrameConverter();
+            for (int i = 0; i < grabber.getLengthInFrames(); i++) {
+                grabber.setFrameNumber(i);
+                BufferedImage image = converter.convert(grabber.grab());
+                if (image != null) {
+                    frames.add(image);
+                }
+            }
+    
+            // Release the grabber
+            grabber.stop();
+            grabber.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        // Read the video frame by frame
-        Mat frame = new Mat();
-        while (capture.read(frame)) {
-            // Convert frame to BufferedImage
-            BufferedImage image = matToBufferedImage(frame);
-            frames.add(image);
-        }
-
-        // Release the capture object
-        capture.release();
-
+    
         return frames;
-    }
-
-    // Helper method to convert Mat to BufferedImage
-    private static BufferedImage matToBufferedImage(Mat mat) {
-        // Convert Mat to byte array
-        int width = mat.cols();
-        int height = mat.rows();
-        int channels = mat.channels();
-        byte[] imageData = new byte[width * height * channels];
-        mat.data().get(imageData);
-
-        // Create BufferedImage
-        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
-        image.getRaster().setDataElements(0, 0, width, height, imageData);
-
-        return image;
     }    
-
 }
