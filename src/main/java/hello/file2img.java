@@ -25,16 +25,10 @@ import com.xuggle.mediatool.IMediaWriter;
 import com.xuggle.mediatool.ToolFactory;
 import com.xuggle.xuggler.ICodec;
 import com.xuggle.mediatool.IMediaReader;
-//get congtaner format
-import com.xuggle.xuggler.IContainer;
-// get read buffer image
-import com.xuggle.xuggler.IPacket;
-
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.Java2DFrameConverter;
-import org.bytedeco.opencv.opencv_core.IplImage;
-import org.bytedeco.opencv.opencv_core.Mat;
-import org.bytedeco.opencv.opencv_videoio.VideoCapture;
+import org.bytedeco.javacv.Frame;
+
 
 
 
@@ -51,10 +45,12 @@ public class file2img {
             String binaryData = fileToBinary();
             List<BufferedImage> frames = binaryToFrames(binaryData, 1280, 720, 4, 24,1);
             framesToVideo(frames, "Videos/output.mp4", 1280, 720, 24);
-            //framesToBinary(frames, 1280, 720, 4);
-            System.out.println("File converted to Video!");
+            framesToBinary(frames, 1280, 720, 4);
+            System.out.println("Converted file to video");
         }
         else if(input_Data.equals("2")){
+
+            //Input
             System.out.println("Enter the path of the video file: ");
             String videoPath = scanner.nextLine();
             //check if the video file exists
@@ -64,13 +60,16 @@ public class file2img {
                 videoPath = scanner.nextLine();
                 file = new File(videoPath);
             }
-            List<BufferedImage> frames = vidToFrames(videoPath,1);
-            if(frames.size() == 0){
-                System.out.println("Error: No frames found in the video.");
-                return;
-            }
-            framesToBinary(frames, 1280, 720, 4);
-            System.out.println("Video converted to File!");
+
+            //convert the video to frames
+            vidToFrames(videoPath);
+            //if(frames.size() == 0){
+            //     System.out.println("Error: No frames found in the video.");
+            //     return;
+            // }
+            //convert the frames to binary
+            //framesToBinary(frames, 1280, 720, 4);
+            System.out.println("Video converted to File");
         }
         else{
             System.out.println("input WIP");
@@ -92,6 +91,7 @@ public class file2img {
                 fileName = file.getName();
             }
         }
+        System.out.println(fileName);
 
         // Read the contents of the file and convert it to binary
         File inputFile = new File(dir, fileName);
@@ -128,17 +128,14 @@ public class file2img {
         if (width == 0) {
             width = 1280; // Default width for 720p
         }
-
         // Check if height is not provided, use default value
         if (height == 0) {
             height = 720; // Default height for 720p
         }
-
         // Check if pixelSize is not provided, use default value
         if (pixelSize == 0) {
             pixelSize = 4; // Default pixel size
         }
-
         // Check if fps is not provided, use default value
         if (fps == 0) {
             fps = 24; // Default frames per second
@@ -210,23 +207,7 @@ public class file2img {
         }
 
         if(genimages == 1){
-            // Create a directory to store the frames
-            File directory = new File("temp0");
-            if (!directory.exists()) {
-                directory.mkdir();
-            }
-
-            // Save the frames as images in the temp directory
-            for (int i = 0; i < frames.size(); i++) {
-                BufferedImage frame = frames.get(i);
-                String filename = "frame_" + i + ".png";
-                File file = new File(directory, filename);
-                try {
-                    ImageIO.write(frame, "png", file);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+            StoreImages(frames , "temp0");
         }
 
         return frames;
@@ -268,8 +249,6 @@ public class file2img {
                 }
             }
         }
-        System.out.println("Binary data reconstructed from frames");
-
         // Convert the binary data to text
         String text = binaryToText(binaryData.toString());
 
@@ -330,9 +309,7 @@ public class file2img {
         return image;
     }
 
-    public static List<BufferedImage> vidToFrames(String videoPath,int genimages) {
-        List<BufferedImage> frames = new ArrayList<>();
-    
+    public static void vidToFrames(String videoPath) {
         try {
             // Create a frame grabber
             FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(videoPath);
@@ -340,12 +317,22 @@ public class file2img {
     
             // Convert each frame to BufferedImage
             Java2DFrameConverter converter = new Java2DFrameConverter();
-            for (int i = 0; i < grabber.getLengthInFrames(); i++) {
-                grabber.setFrameNumber(i);
-                BufferedImage image = converter.convert(grabber.grab());
+            Frame frame;
+            int frameCount = 0;
+            File frameFolder = new File("frames/");
+            if (!frameFolder.exists()) {
+                frameFolder.mkdirs();
+            }
+            while ((frame = grabber.grabImage()) != null) {
+                BufferedImage image = converter.convert(frame);
                 if (image != null) {
-                    frames.add(image);
+                    // Save the frame in its own folder
+                    File outputFile = new File(frameFolder, "frame_" + frameCount + ".png");
+                    ImageIO.write(image, "png", outputFile);
+                } else {
+                    System.out.println("Frame " + frameCount + " is null");
                 }
+                frameCount++;
             }
     
             // Release the grabber
@@ -354,26 +341,28 @@ public class file2img {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    
 
-        if(genimages == 1){
-            // Create a directory to store the frames
-            File directory = new File("temp0");
-            if (!directory.exists()) {
-                directory.mkdir();
-            }
 
-            // Save the frames as images in the temp directory
-            for (int i = 0; i < frames.size(); i++) {
-                BufferedImage frame = frames.get(i);
-                String filename = "frame_" + i + ".png";
-                File file = new File(directory, filename);
-                try {
-                    ImageIO.write(frame, "png", file);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+    public static void StoreImages(List<BufferedImage> frames, String folderPath) {
+        
+        // Create a directory to store the frames
+        File directory = new File(folderPath);
+        if (!directory.exists()) {
+            directory.mkdir();
+        }
+
+        // Save the frames as images in the temp directory
+        for (int i = 0; i < frames.size(); i++) {
+            BufferedImage frame = frames.get(i);
+            String filename = "frame_" + i + ".png";
+            File file = new File(directory, filename);
+            try {
+                ImageIO.write(frame, "png", file);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
-        return frames;
-    }    
+    }
 }

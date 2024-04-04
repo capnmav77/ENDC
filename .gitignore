@@ -3,3 +3,6 @@ temp0/
 resources/
 target/
 *.mp4
+temp1/
+frames/
+*.txt
