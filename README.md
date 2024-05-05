@@ -4,15 +4,20 @@
 ```bash
     mvn clean install
 ```
-## After the above has executed successfully : 
+
+If the above does not work then check the dependencies and try the below 
+
 ```bash
+    mvn clean 
     mvn compile
 ```
-## After the above has executed successfully : 
+After the above has executed successfully : 
 ```bash
     mvn package
 ```
-## After the above has executed successfully : 
+
+
+## Finally after the Jar file has been made run it using : 
 ```bash
     java -jar target/gs-maven-0.1.0.jar
 ```
